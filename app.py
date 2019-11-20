@@ -5,7 +5,7 @@ import keyboards
 from keyboards import *
 import telebot
 from flask import Flask, request, abort
-from lessons.product.models.models import *
+from models.models import *
 
 app = Flask(__name__)
 bot = telebot.TeleBot(config.TOKEN)

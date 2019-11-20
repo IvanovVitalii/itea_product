@@ -40,22 +40,6 @@ for i in range(50):
 #
 # Texts(**text_dict).save()
 #
-#
-#
-#
-#
-#
-#
-# for i in range(4):
-#     list_c = {
-#         'title': f'Категория-{i}',
-#         'description': f'Описание-{i}',
-#         'is_root': True
-#     }
-#     category_list.append(Category(**list_c).save())
-#
-#
-
 
 
 
