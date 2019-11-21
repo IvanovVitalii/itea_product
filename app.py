@@ -11,15 +11,15 @@ app = Flask(__name__)
 bot = telebot.TeleBot(config.TOKEN)
 
 # Process webhook calls
-@app.route('/', methods=['POST'])
-def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return ''
-    else:
-        abort(403)
+# @app.route('/', methods=['POST'])
+# def webhook():
+#     if request.headers.get('content-type') == 'application/json':
+#         json_string = request.get_data().decode('utf-8')
+#         update = telebot.types.Update.de_json(json_string)
+#         bot.process_new_updates([update])
+#         return ''
+#     else:
+#         abort(403)
 
 
 @bot.message_handler(commands=['start'])
@@ -148,6 +148,53 @@ def add_to_basket(call):
                           chat_id=call.message.chat.id, reply_markup=kb)
 
 
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'basket')
+def basket(call):
+    user = User.objects(user=str(call.message.chat.id)).get()
+
+    if call.data.split('_')[1] == '0':
+        basket = Basket.objects(user=user)
+    else:
+        delete_product = Product.objects(id=call.data.split('_')[1])
+        basket_old = Basket.objects(user=user)
+        basket_old.update(pull__products=delete_product.get())
+        basket = Basket.objects(user=user)
+    sum = 0
+    button = []
+    kb = InlineKeyboardMarkup(row_width=1)
+    for i in basket:
+        for product in i.products:
+            sum += product.price / 100
+            button.append(
+                InlineKeyboardButton(text=f'{product.title}\nЦена: {int(product.price) / 100}\nУдалить?',
+                                     callback_data=f'basket_{product.id}')
+            )
+    buttons = (
+        InlineKeyboardButton(text=f'Оплатить: {sum}',
+                             callback_data=f'to_pay_0'),
+        InlineKeyboardButton(text=f'<<',
+                             callback_data=f'home_/start')
+    )
+    kb.add(*button)
+    kb.add(*buttons)
+
+    bot.send_message(text=f'К оплате: <b>{sum}</b> \nТовары в корзине:',
+                     chat_id=call.message.chat.id, reply_markup=kb, parse_mode='HTML')
+    bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'to_pay')
+def pay(call):
+    print('11111')
+    kb = InlineKeyboardMarkup()
+    button = [InlineKeyboardButton(text=f'На главную',
+                                  callback_data=f'home_/start')]
+    kb.add(*button)
+    bot.edit_message_text(text='На главную', chat_id=call.message.chat.id,
+                          message_id=call.message.message_id,
+                          reply_markup=kb)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'back')
 def go_back(call):
     obj_id = call.data.split('_')[1]
@@ -202,51 +249,13 @@ def home(call):
                           message_id=call.message.message_id,  reply_markup=kb)
 
 
-@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'basket')
-def basket(call):
-    user = User.objects(user=str(call.message.chat.id)).get()
-
-    if call.data.split('_')[1] == '0':
-        basket = Basket.objects(user=user)
-    else:
-        delete_product = Product.objects(id=call.data.split('_')[1])
-        for i in Basket.objects(user=user):
-            i.update(pull__products=delete_product.get())
-        basket = Basket.objects(user=user)
-    sum = 0
-    button = []
-    kb = InlineKeyboardMarkup(row_width=1)
-    for i in basket:
-        for product in i.products:
-            sum += product.price / 100
-            button.append(
-                InlineKeyboardButton(text=f'{product.title}\nЦена: {int(product.price) / 100}\nУдалить?',
-                                     callback_data=f'basket_{product.id}')
-            )
-    buttons = (
-        InlineKeyboardButton(text=f'Оплатить: {sum}',
-                             callback_data=f'to_pay_0'),
-        InlineKeyboardButton(text=f'<<',
-                             callback_data=f'home_/start')
-    )
-    kb.add(*button)
-    kb.add(*buttons)
-
-    bot.send_message(text=f'К оплате: <b>{sum}</b> \nТовары в корзине:',
-                     chat_id=call.message.chat.id, reply_markup=kb, parse_mode='HTML')
-    bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-
-
-
-
 if __name__ == '__main__':
-    import time
-    bot.remove_webhook()
-    time.sleep(1)
-    bot.set_webhook(config.webhook_url,
-                       certificate=open('webhook_cert.pem', 'r'))
-    app.run(debug=True)
+    # import time
+    # bot.remove_webhook()
+    # time.sleep(1)
+    # bot.set_webhook(config.webhook_url,
+    #                    certificate=open('webhook_cert.pem', 'r'))
+    # app.run(debug=True)
     bot.polling(none_stop=True)
 
 # кадисервер https://globalfreelance.ua/
