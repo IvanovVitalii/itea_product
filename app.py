@@ -24,6 +24,11 @@ def webhook():
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    '''
+
+    :param message:
+    :return:
+    '''
     try:
         user = User.objects(user=str(message.chat.id)).get().user
         print('user found')
@@ -31,7 +36,7 @@ def start(message):
         user = User(**{'user': f'{message.chat.id}'}).save()
         Basket(**{'user': user, 'products': []}).save()
         print('user add')
-    greetings_str = Texts.objects(title='Greetings').get().body
+    greetings_str = 'Магазин-Телеграм BOT'
     kb = InlineKeyboardMarkup()
     button = []
     keyboard = keyboards.beginning_kb
@@ -42,6 +47,23 @@ def start(message):
     bot.send_message(message.chat.id, greetings_str, reply_markup=kb)
 
 
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'news')
+def show_categories(call):
+    '''
+
+    :param message:
+    :return: listed root category
+    '''
+    kb = InlineKeyboardMarkup()
+    button = [InlineKeyboardButton(text=f'На главную',
+                                   callback_data=f'home_/start')]
+    kb.add(*button)
+    text = 'Новостей нет'
+    bot.edit_message_text(text=text, chat_id=call.message.chat.id,
+                          message_id=call.message.message_id,
+                          reply_markup=kb)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'products')
 def show_categories(call):
     '''
@@ -49,7 +71,6 @@ def show_categories(call):
     :param message:
     :return: listed root category
     '''
-
     kb = keyboards.InlineKB(
         key='root',
         lookup_field='id',
@@ -61,6 +82,33 @@ def show_categories(call):
     bot.edit_message_text(text='Выберите категорию', chat_id=call.message.chat.id,
                           message_id=call.message.message_id,
                           reply_markup=kb)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'about')
+def show_categories(call):
+    '''
+
+    :param call:
+    :return:
+    '''
+    kb = InlineKeyboardMarkup()
+    button = [InlineKeyboardButton(text=f'На главную',
+                                   callback_data=f'home_/start')]
+    kb.add(*button)
+    text = Texts.objects(title='Greetings').get().body
+    bot.edit_message_text(text=text, chat_id=call.message.chat.id,
+                          message_id=call.message.message_id,
+                          reply_markup=kb)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'sales')
+def show_categories(call):
+    '''
+
+    :param call:
+    :return:
+    '''
+    pass
 
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'category')
@@ -85,7 +133,6 @@ def show_products_or_sub_category(call):
                               message_id=call.message.message_id,
                               reply_markup=kb)
     else:
-        print('NON PARENT')
         product = Product.objects(category=obj_id).all()
         kb = keyboards.InlineKB(
             iterable=product,
@@ -127,6 +174,11 @@ def show_product(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'buy')
 def add_to_basket(call):
+    '''
+
+    :param call:
+    :return:
+    '''
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     obj_id = call.data.split('_')[1]
     product = Product.objects(id=obj_id)
@@ -149,6 +201,11 @@ def add_to_basket(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'basket')
 def basket(call):
+    '''
+
+    :param call:
+    :return:
+    '''
     user = User.objects(user=str(call.message.chat.id)).get()
 
     if call.data.split('_')[1] == '0':
@@ -184,6 +241,11 @@ def basket(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'pay')
 def pay(call):
+    '''
+
+    :param call:
+    :return:
+    '''
     user = User.objects(user=str(call.message.chat.id)).get()
     basket = Basket.objects(user=user).get()
     products = basket.products
@@ -203,6 +265,11 @@ def pay(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'back')
 def go_back(call):
+    '''
+
+    :param call:
+    :return:
+    '''
     obj_id = call.data.split('_')[1]
     category = Category.objects(id=obj_id).get()
     if category.is_root:
@@ -236,12 +303,17 @@ def go_back(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'home')
 def home(call):
+    '''
+
+    :param call:
+    :return:
+    '''
     try:
         user = User.objects(user=str(call.message.chat.id)).get().user
     except:
         user = User(**{'user': f'{call.message.chat.id}'}).save()
         Basket(**{'user': user}).save()
-    greetings_str = Texts.objects(title='Greetings').get().body
+    greetings_str = 'Магазин-Телеграм BOT'
     kb = InlineKeyboardMarkup()
     button = []
     keyboard = keyboards.beginning_kb

@@ -12,7 +12,7 @@ from models.models import (
 )
 
 beginning_kb = {
-    'nes': 'Последние новости',
+    'news': 'Последние новости',
     'products': 'Продукты',
     'sales': 'Товар со скидкой',
     'about': 'Информация о магазине',
