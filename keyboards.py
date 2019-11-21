@@ -71,8 +71,3 @@ class InlineKB(InlineKeyboardMarkup):
 
         self.add(*buttons)
         return self
-
-
-
-# https://surik00.gitbooks.io/aiogram-lessons/chapter5.html
-# https://groosha.gitbook.io/telegram-bot-lessons/chapter8

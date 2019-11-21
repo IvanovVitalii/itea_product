@@ -39,7 +39,3 @@ for i in range(50):
 # }
 #
 # Texts(**text_dict).save()
-#
-
-
-
