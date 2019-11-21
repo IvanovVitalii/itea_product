@@ -1,5 +1,5 @@
 # интернет магазин бот + rest
-
+import datetime
 import config
 import keyboards
 from keyboards import *
@@ -30,7 +30,6 @@ def start(message):
     except:
         user = User(**{'user': f'{message.chat.id}'}).save()
         Basket(**{'user': user, 'products': []}).save()
-        print(Basket.objects)
         print('user add')
     greetings_str = Texts.objects(title='Greetings').get().body
     kb = InlineKeyboardMarkup()
@@ -171,7 +170,7 @@ def basket(call):
             )
     buttons = (
         InlineKeyboardButton(text=f'Оплатить: {sum}',
-                             callback_data=f'to_pay_0'),
+                             callback_data=f'pay_0'),
         InlineKeyboardButton(text=f'<<',
                              callback_data=f'home_/start')
     )
@@ -183,14 +182,22 @@ def basket(call):
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
 
-@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'to_pay')
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'pay')
 def pay(call):
-    print('11111')
+    user = User.objects(user=str(call.message.chat.id)).get()
+    basket = Basket.objects(user=user).get()
+    products = basket.products
+    print(products)
+    data = datetime.datetime.now()
+    History(**{'user': user,
+               'products': products,
+               'data': data}).save()
+    Basket.objects(user=user).update(pull_all__products=products)
     kb = InlineKeyboardMarkup()
     button = [InlineKeyboardButton(text=f'На главную',
                                   callback_data=f'home_/start')]
     kb.add(*button)
-    bot.edit_message_text(text='На главную', chat_id=call.message.chat.id,
+    bot.edit_message_text(text='Спасибо за покупку', chat_id=call.message.chat.id,
                           message_id=call.message.message_id,
                           reply_markup=kb)
 

@@ -14,7 +14,7 @@ from models.models import (
 beginning_kb = {
     'nes': 'Последние новости',
     'products': 'Продукты',
-    'sales': 'Презервативы со скидкой',
+    'sales': 'Товар со скидкой',
     'about': 'Информация о магазине',
     'basket': 'Корзина'
 }

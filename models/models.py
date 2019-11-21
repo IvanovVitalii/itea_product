@@ -72,6 +72,13 @@ class Basket(Document):
     products = ListField(ReferenceField(Product), default=None)
 
 
+class History(Document):
+    user = ReferenceField(User)
+    products = ListField(ReferenceField(Product))
+    data = DateField()
+
+
+# History.objects.delete()
 # Basket.objects.delete()
 # User.objects.delete()
 # Product.objects.delete()
