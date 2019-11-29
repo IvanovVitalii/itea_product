@@ -11,15 +11,15 @@ app = Flask(__name__)
 bot = telebot.TeleBot(config.TOKEN)
 
 # Process webhook calls
-@app.route('/', methods=['POST'])
-def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return ''
-    else:
-        abort(403)
+# @app.route('/', methods=['POST'])
+# def webhook():
+#     if request.headers.get('content-type') == 'application/json':
+#         json_string = request.get_data().decode('utf-8')
+#         update = telebot.types.Update.de_json(json_string)
+#         bot.process_new_updates([update])
+#         return ''
+#     else:
+#         abort(403)
 
 
 @bot.message_handler(commands=['start'])
@@ -102,13 +102,29 @@ def show_categories(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'sales')
-def show_categories(call):
+def show_sales_product(call):
     '''
 
     :param call:
     :return:
     '''
-    pass
+    product = Product.objects(is_discount=True).all()
+    kb = keyboards.InlineKB(
+        iterable=product,
+        lookup_field='id',
+        named_arg='product'
+    )
+    kb.generate_kb()
+    kb.add(InlineKeyboardButton(text=f'<<',
+                                callback_data=f'home_0'))
+    try:
+        bot.edit_message_text(text='Товары со скидкой', chat_id=call.message.chat.id,
+                              message_id=call.message.message_id,
+                              reply_markup=kb)
+    except:
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(text='Товары со скидкой', chat_id=call.message.chat.id,
+                         reply_markup=kb)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'category')
@@ -157,17 +173,28 @@ def show_product(call):
     obj_id = call.data.split('_')[1]
     product = Product.objects(id=obj_id).get()
     category = Category.objects(id=product.category.id).get()
-    description = f'{product.title}\n{product.description}\nЦена: <b>{int(product.price) / 100}</b>'
 
-    kb = InlineKeyboardMarkup()
-    button = [
-        InlineKeyboardButton(text='В корзину',
-                             callback_data=f'buy_{product.id}'),
-        InlineKeyboardButton(text=f'<<',
-                             callback_data=f'back_{category.id}')
+    if not product.is_discount:
+        description = f'{product.title}\n{product.description}\nЦена: <b>{int(product.price) / 100}</b>'
+        kb = InlineKeyboardMarkup()
+        button = [
+            InlineKeyboardButton(text='В корзину',
+                                 callback_data=f'buy_{product.id}'),
+            InlineKeyboardButton(text=f'<<',
+                                 callback_data=f'back_{category.id}')
+            ]
+    else:
+        description = f'{product.title}\n{product.description}\nЦена без скидки: {int(product.price) / 100}\n' \
+                      f'Цена со скидкой: <b>{int(product.new_price) / 100}</b>'
+        kb = InlineKeyboardMarkup()
+        button = [
+            InlineKeyboardButton(text='В корзину',
+                                 callback_data=f'buy_{product.id}'),
+            InlineKeyboardButton(text=f'<<',
+                                 callback_data='sales_0')
         ]
-    kb.add(*button)
 
+    kb.add(*button)
     bot.send_photo(chat_id=call.message.chat.id, photo=product.logo,
                    caption=description, reply_markup=kb, parse_mode='HTML')
 
@@ -329,7 +356,7 @@ if __name__ == '__main__':
     import time
     bot.remove_webhook()
     time.sleep(1)
-    bot.set_webhook(config.webhook_url,
-                       certificate=open('webhook_cert.pem', 'r'))
-    app.run(debug=True)
+    # bot.set_webhook(config.webhook_url,
+    #                    certificate=open('webhook_cert.pem', 'r'))
+    # app.run(debug=True)
     bot.polling(none_stop=True)

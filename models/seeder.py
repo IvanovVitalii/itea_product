@@ -23,13 +23,26 @@ with open(os.path.abspath('../logo/logo.jpg'), 'rb') as f:
     logo = f.read()
 
 for i in range(50):
-    product = {
-        'title': f'Продукт-{i}',
-        'description': f'Описание-{i}',
-        'price': random.randint(1500, 20000),
-        'logo': logo,
-        'category': random.choice(category_list)
-    }
+    price = random.randint(1500, 20000)
+    is_discount = bool(random.randint(False, True))
+    if is_discount:
+        product = {
+            'title': f'Продукт-{i}',
+            'description': f'Описание-{i}',
+            'price': price,
+            'new_price': int(price//1.1),
+            'is_discount': is_discount,
+            'logo': logo,
+            'category': random.choice(category_list)
+        }
+    else:
+        product = {
+            'title': f'Продукт-{i}',
+            'description': f'Описание-{i}',
+            'price': price,
+            'logo': logo,
+            'category': random.choice(category_list)
+        }
     Product(**product).save()
 
 
