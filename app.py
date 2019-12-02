@@ -247,9 +247,14 @@ def basket(call):
     kb = InlineKeyboardMarkup(row_width=1)
     for i in basket:
         for product in i.products:
-            sum += product.price / 100
+            if not product.is_discount:
+                price_text = f'Цена: {int(product.price) / 100}'
+                sum += product.price / 100
+            else:
+                price_text = f'Цена со скидкой:{int(product.new_price) / 100}'
+                sum += product.new_price / 100
             button.append(
-                InlineKeyboardButton(text=f'{product.title}\nЦена: {int(product.price) / 100}\nУдалить?',
+                InlineKeyboardButton(text=f'{product.title}\n{price_text}\nУдалить?',
                                      callback_data=f'basket_{product.id}')
             )
     buttons = (

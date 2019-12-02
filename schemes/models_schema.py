@@ -33,8 +33,8 @@ class ProductSchema(Schema):
     new_price = fields.Integer(min_value=0)
     is_discount = fields.Boolean(default=False)
     logo = fields.FieldABC()
-    properties = fields.Nested(PropertiesSchema)
-    category = fields.Nested(CategorySchema)
+    # properties = fields.Nested(PropertiesSchema)
+    # category = fields.Nested(CategorySchema)
 
 
 class BasketSchema(Schema):

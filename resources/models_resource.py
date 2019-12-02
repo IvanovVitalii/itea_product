@@ -7,13 +7,15 @@ from models.models import *
 class TextsResource(Resource):
 
     def get(self):
-    return TextsSchema().dump(Texts.objects().get())
+        return TextsSchema().dump(Texts.objects().get())
 
     def post(self):
         return jsonify(**{'method': 'post'})
 
-    def put(self, id):
-        return jsonify(**{'method': 'put'})
+    def put(self):
+        obj = Texts.objects(id=id).get()
+        obj.update(**request.json)
+        return TextsSchema().dump(obj.reload())
 
     def delete(self):
         return jsonify(**{'method': 'delete'})
@@ -37,12 +39,12 @@ class CategoryResource(Resource):
 class ProductResource(Resource):
 
     def get(self, id=None):
-        return jsonify(**{'method': 'get'})
+        return ProductSchema().dump(Product.objects().get())
 
     def post(self):
         return jsonify(**{'method': 'post'})
 
-    def put(self, id):
+    def put(self, id=None):
         return jsonify(**{'method': 'put'})
 
     def delete(self):
