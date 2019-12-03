@@ -10,21 +10,26 @@ class TextsResource(Resource):
         return TextsSchema().dump(Texts.objects().get())
 
     def post(self):
-        return jsonify(**{'method': 'post'})
+        obj = Texts(**request.json).save()
+        return TextsSchema().dump(Texts.objects(id=obj.id).get())
 
     def put(self):
-        obj = Texts.objects(id=id).get()
+        obj = Texts.objects().get()
         obj.update(**request.json)
         return TextsSchema().dump(obj.reload())
 
     def delete(self):
-        return jsonify(**{'method': 'delete'})
+        Texts.objects().delete()
+        return jsonify(**{'object': 'delete'})
 
 
 class CategoryResource(Resource):
 
     def get(self, id=None):
-        return jsonify(**{'method': 'get'})
+        if not id:
+            objects = Category.objects
+            return CategorySchema().dump(objects, many=True)
+        return CategorySchema().dump(Category.objects(id=id).get())
 
     def post(self):
         return jsonify(**{'method': 'post'})
@@ -32,14 +37,18 @@ class CategoryResource(Resource):
     def put(self, id):
         return jsonify(**{'method': 'put'})
 
-    def delete(self):
-        return jsonify(**{'method': 'delete'})
+    def delete(self, id):
+        Category.objects(id=id).delete()
+        return jsonify(**{'category': 'delete'})
 
 
 class ProductResource(Resource):
 
     def get(self, id=None):
-        return ProductSchema().dump(Product.objects().get())
+        if not id:
+            objects = Product.objects
+            return ProductSchema().dump(objects, many=True)
+        return ProductSchema().dump(Product.objects(id=id).get())
 
     def post(self):
         return jsonify(**{'method': 'post'})
@@ -47,5 +56,6 @@ class ProductResource(Resource):
     def put(self, id=None):
         return jsonify(**{'method': 'put'})
 
-    def delete(self):
-        return jsonify(**{'method': 'delete'})
+    def delete(self, id):
+        Product.objects(id=id).delete()
+        return jsonify(**{'product': 'delete'})
