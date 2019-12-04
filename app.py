@@ -1,9 +1,10 @@
 # интернет магазин бот + rest
-import datetime
-import config
-import keyboards
-from keyboards import *
 import telebot
+import keyboards
+import config
+import datetime
+import os
+from keyboards import *
 from flask import Flask, request, abort
 from models.models import *
 
@@ -149,7 +150,7 @@ def show_products_or_sub_category(call):
                               message_id=call.message.message_id,
                               reply_markup=kb)
     else:
-        product = Product.objects(category=obj_id).all()
+        product = Product.objects(category=obj_id, is_discount=False).all()
         kb = keyboards.InlineKB(
             iterable=product,
             lookup_field='id',
@@ -174,16 +175,7 @@ def show_product(call):
     product = Product.objects(id=obj_id).get()
     category = Category.objects(id=product.category.id).get()
 
-    if not product.is_discount:
-        description = f'{product.title}\n{product.description}\nЦена: <b>{int(product.price) / 100}</b>'
-        kb = InlineKeyboardMarkup()
-        button = [
-            InlineKeyboardButton(text='В корзину',
-                                 callback_data=f'buy_{product.id}'),
-            InlineKeyboardButton(text=f'<<',
-                                 callback_data=f'back_{category.id}')
-            ]
-    else:
+    if product.is_discount:
         description = f'{product.title}\n{product.description}\nЦена без скидки: {int(product.price) / 100}\n' \
                       f'Цена со скидкой: <b>{int(product.new_price) / 100}</b>'
         kb = InlineKeyboardMarkup()
@@ -193,9 +185,20 @@ def show_product(call):
             InlineKeyboardButton(text=f'<<',
                                  callback_data='sales_0')
         ]
+    else:
+        description = f'{product.title}\n{product.description}\nЦена: <b>{int(product.price) / 100}</b>'
+        kb = InlineKeyboardMarkup()
+        button = [
+            InlineKeyboardButton(text='В корзину',
+                                 callback_data=f'buy_{product.id}'),
+            InlineKeyboardButton(text=f'<<',
+                                 callback_data=f'back_{category.id}')
+        ]
 
+    with open(os.path.abspath(product.logo), 'rb') as f:
+        logo = f.read()
     kb.add(*button)
-    bot.send_photo(chat_id=call.message.chat.id, photo=product.logo,
+    bot.send_photo(chat_id=call.message.chat.id, photo=logo,
                    caption=description, reply_markup=kb, parse_mode='HTML')
 
 

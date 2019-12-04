@@ -51,7 +51,7 @@ class Product(Document):
     price = IntField(min_value=0)
     new_price = IntField(min_value=0)
     is_discount = BooleanField(default=False)
-    logo = BinaryField(default=None)
+    logo = StringField(max_length=255, default=None)
     properties = EmbeddedDocumentField(Properties)
     category = ReferenceField(Category)
     # tag

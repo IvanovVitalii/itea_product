@@ -32,10 +32,13 @@ class CategoryResource(Resource):
         return CategorySchema().dump(Category.objects(id=id).get())
 
     def post(self):
-        return jsonify(**{'method': 'post'})
+        obj = Category(**request.json).save()
+        return CategorySchema().dump(Category.objects(id=obj.id).get())
 
     def put(self, id):
-        return jsonify(**{'method': 'put'})
+        obj = Category.objects(id=id).get()
+        obj.update(**request.json)
+        return CategorySchema().dump(obj.reload())
 
     def delete(self, id):
         Category.objects(id=id).delete()
@@ -51,11 +54,22 @@ class ProductResource(Resource):
         return ProductSchema().dump(Product.objects(id=id).get())
 
     def post(self):
-        return jsonify(**{'method': 'post'})
+        obj = Product(**request.json).save()
+        return ProductSchema().dump(Category.objects(id=obj.id).get())
 
-    def put(self, id=None):
-        return jsonify(**{'method': 'put'})
+    def put(self, id):
+        obj = Product.objects(id=id).get()
+        obj.update(**request.json)
+        return ProductSchema().dump(obj.reload())
 
     def delete(self, id):
         Product.objects(id=id).delete()
         return jsonify(**{'product': 'delete'})
+
+
+class HistoryResourse(Resource):
+
+    def get(self, user_id=None):
+        if not user_id:
+            return HistorySchema().dump(History.objects(), many=True)
+        return HistorySchema().dump(History.objects(user=user_id).get())

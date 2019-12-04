@@ -19,8 +19,8 @@ for i in objects:
     i.add_subcategory(obj)
 
 
-with open(os.path.abspath('../logo/logo.jpg'), 'rb') as f:
-    logo = f.read()
+# with open(os.path.abspath('../logo/logo.jpg'), 'rb') as f:
+#     logo = f.read()
 
 for i in range(50):
     price = random.randint(1500, 20000)
@@ -32,7 +32,7 @@ for i in range(50):
             'price': price,
             'new_price': int(price//1.1),
             'is_discount': is_discount,
-            'logo': logo,
+            'logo': 'logo/logo.jpg',
             'category': random.choice(category_list)
         }
     else:
@@ -40,7 +40,7 @@ for i in range(50):
             'title': f'Продукт-{i}',
             'description': f'Описание-{i}',
             'price': price,
-            'logo': logo,
+            'logo': 'logo/logo.jpg',
             'category': random.choice(category_list)
         }
     Product(**product).save()
