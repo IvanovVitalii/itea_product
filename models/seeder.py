@@ -1,5 +1,5 @@
 from models import *
-import random, os
+import random
 
 category_list = []
 for i in range(5):
@@ -17,10 +17,6 @@ for i in objects:
     obj = Category(**dict_sub_sub)
     category_list.append(obj)
     i.add_subcategory(obj)
-
-
-# with open(os.path.abspath('../logo/logo.jpg'), 'rb') as f:
-#     logo = f.read()
 
 for i in range(50):
     price = random.randint(1500, 20000)
@@ -44,7 +40,6 @@ for i in range(50):
             'category': random.choice(category_list)
         }
     Product(**product).save()
-
 
 # text_dict = {
 #     'title': 'Greetings',

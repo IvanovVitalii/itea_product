@@ -12,15 +12,15 @@ app = Flask(__name__)
 bot = telebot.TeleBot(config.TOKEN)
 
 # Process webhook calls
-# @app.route('/', methods=['POST'])
-# def webhook():
-#     if request.headers.get('content-type') == 'application/json':
-#         json_string = request.get_data().decode('utf-8')
-#         update = telebot.types.Update.de_json(json_string)
-#         bot.process_new_updates([update])
-#         return ''
-#     else:
-#         abort(403)
+@app.route('/', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    else:
+        abort(403)
 
 
 @bot.message_handler(commands=['start'])
@@ -28,7 +28,7 @@ def start(message):
     '''
 
     :param message:
-    :return:
+    :return: home page
     '''
     try:
         user = User.objects(user=str(message.chat.id)).get().user
@@ -90,7 +90,7 @@ def show_categories(call):
     '''
 
     :param call:
-    :return:
+    :return: about store
     '''
     kb = InlineKeyboardMarkup()
     button = [InlineKeyboardButton(text=f'На главную',
@@ -107,7 +107,7 @@ def show_sales_product(call):
     '''
 
     :param call:
-    :return:
+    :return: discount products
     '''
     product = Product.objects(is_discount=True).all()
     kb = keyboards.InlineKB(
@@ -169,7 +169,7 @@ def show_product(call):
     '''
 
     :param call:
-    :return:
+    :return: product page
     '''
     obj_id = call.data.split('_')[1]
     product = Product.objects(id=obj_id).get()
@@ -207,7 +207,7 @@ def add_to_basket(call):
     '''
 
     :param call:
-    :return:
+    :return: product in basket
     '''
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
     obj_id = call.data.split('_')[1]
@@ -234,7 +234,7 @@ def basket(call):
     '''
 
     :param call:
-    :return:
+    :return: basket page
     '''
     user = User.objects(user=str(call.message.chat.id)).get()
 
@@ -279,7 +279,7 @@ def pay(call):
     '''
 
     :param call:
-    :return:
+    :return: payment
     '''
     user = User.objects(user=str(call.message.chat.id)).get()
     basket = Basket.objects(user=user).get()
@@ -303,7 +303,7 @@ def go_back(call):
     '''
 
     :param call:
-    :return:
+    :return: go back
     '''
     obj_id = call.data.split('_')[1]
     category = Category.objects(id=obj_id).get()
@@ -341,7 +341,7 @@ def home(call):
     '''
 
     :param call:
-    :return:
+    :return: go back to home page
     '''
     try:
         user = User.objects(user=str(call.message.chat.id)).get().user
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     import time
     bot.remove_webhook()
     time.sleep(1)
-    # bot.set_webhook(config.webhook_url,
-    #                    certificate=open('webhook_cert.pem', 'r'))
-    # app.run(debug=True)
+    bot.set_webhook(config.webhook_url,
+                       certificate=open('webhook_cert.pem', 'r'))
+    app.run(debug=True)
     bot.polling(none_stop=True)
